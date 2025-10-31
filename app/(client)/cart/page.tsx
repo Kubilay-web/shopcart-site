@@ -51,8 +51,6 @@ const CartPage = () => {
   const [isAddAddressModalOpen, setIsAddAddressModalOpen] = useState(false);
 
 
-    // ✅ useRef ile trigger oluştur
-    const fetchTriggerRef = useRef(0);
 
 
    const fetchAddresses = async () => {

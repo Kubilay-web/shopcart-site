@@ -130,6 +130,8 @@ const AddAddressModal = ({ open, onOpenChange, onAddressAdded }: AddAddressModal
     }
   };
 
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     
