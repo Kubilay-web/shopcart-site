@@ -10,7 +10,7 @@ import { useAuth, useUser } from "@clerk/nextjs";
 import { ShoppingBag, Trash } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import EmptyCart from "@/components/EmptyCart";
 import NoAccessToCart from "@/components/NoAccessToCart";
@@ -31,6 +31,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import ProductSideMenu from "@/components/ProductSideMenu";
+import AddAddressModal from "@/components/AddAdressModal";
 
 const CartPage = () => {
   const {
@@ -47,19 +48,26 @@ const CartPage = () => {
   const { user } = useUser();
   const [addresses, setAddresses] = useState<ADDRESS_QUERYResult | null>(null);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
+  const [isAddAddressModalOpen, setIsAddAddressModalOpen] = useState(false);
 
-  const fetchAddresses = async () => {
+
+    // ✅ useRef ile trigger oluştur
+    const fetchTriggerRef = useRef(0);
+
+
+   const fetchAddresses = async () => {
     setLoading(true);
     try {
       const query = `*[_type=="address"] | order(publishedAt desc)`;
       const data = await client.fetch(query);
-      console.log(data);
+      console.log("📦 Fetched addresses:", data);
+      
       setAddresses(data);
       const defaultAddress = data.find((addr) => addr.default);
       if (defaultAddress) {
         setSelectedAddress(defaultAddress);
       } else if (data.length > 0) {
-        setSelectedAddress(data[0]); // Optional: select first address if no default
+        setSelectedAddress(data[0]);
       }
     } catch (error) {
       console.log("Addresses fetching error:", error);
@@ -68,14 +76,29 @@ const CartPage = () => {
     }
   };
 
-  useEffect(() => {
+
+    useEffect(() => {
     setIsClient(true);
     fetchAddresses();
   }, []);
 
+  // ✅ SADECE modal kapandığında ve fetchTrigger değiştiğinde çek
+  useEffect(() => {
+    if (!isAddAddressModalOpen) {
+      console.log("🔄 Modal closed, fetching addresses...");
+      fetchAddresses();
+    }
+  }, [isAddAddressModalOpen]); // ❌ addresses'i dependency'den ÇIKARIN
+
+  // ✅ addresses değişince yapılacak diğer işlemler (isteğe bağlı)
+  useEffect(() => {
+    console.log("🔍 Addresses updated:");
+  }, [addresses]);
+
   if (!isClient) {
     return <Loading />;
   }
+
 
   const handleResetCart = () => {
     const confirmed = window.confirm("Are you sure to reset your Cart?");
@@ -110,6 +133,13 @@ const CartPage = () => {
     deleteCartProduct(id);
     toast.success("Product deleted successfully!");
   };
+
+  const handleAddressAdded = async () => {
+    await fetchAddresses(); // Adresleri yeniden fetch et
+  };
+
+
+
   return (
     <div className="bg-gray-50 pb-52 md:pb-10">
       {isSignedIn ? (
@@ -256,6 +286,7 @@ const CartPage = () => {
                       </div>
                     </div>
                   </div>
+
                   <div className="">
                     {addresses && (
                       <div className="bg-white rounded-md mt-5">
@@ -295,9 +326,11 @@ const CartPage = () => {
                               ))}
                             </RadioGroup>
 
-                            <Button variant="outline" className="w-full mt-4">
-                              Add New Address
-                            </Button>
+                            <AddAddressModal
+                              open={isAddAddressModalOpen}
+                              onOpenChange={setIsAddAddressModalOpen}
+                              onAddressAdded={handleAddressAdded}
+                            />
                           </CardContent>
                         </Card>
                       </div>
