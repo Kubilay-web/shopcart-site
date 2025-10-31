@@ -122,16 +122,20 @@ const AddAddressModal = ({ open, onOpenChange, onAddressAdded }: AddAddressModal
       if (onAddressAdded) {
         onAddressAdded();
       }
-    } catch (error: any) {
+    } catch (error: unknown) { // ✅ any yerine unknown kullan
       console.error("❌ Error adding address:", error);
-      toast.error(`Failed to add address: ${error.message}`);
+      let errorMessage = "Failed to add address";
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     
