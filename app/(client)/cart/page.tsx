@@ -1,4 +1,6 @@
 "use client";
+
+
 import Container from "@/components/Container";
 import PriceFormatter from "@/components/PriceFormatter";
 import QuantityButtons from "@/components/QuantityButtons";
@@ -106,26 +108,39 @@ const CartPage = () => {
     }
   };
 
+ 
   const handleCheckout = async () => {
-    setLoading(true);
-    try {
-      const metadata: Metadata = {
-        orderNumber: crypto.randomUUID(),
-        customerName: user?.fullName ?? "Unknown",
-        customerEmail: user?.emailAddresses[0]?.emailAddress ?? "Unknown",
-        clerkUserId: user!.id,
-        address: selectedAddress,
-      };
-      const checkoutUrl = await createCheckoutSession(groupedItems, metadata);
-      if (checkoutUrl) {
-        window.location.href = checkoutUrl;
-      }
-    } catch (error) {
-      console.error("Error creating checkout session:", error);
-    } finally {
-      setLoading(false);
+  setLoading(true);
+  try {
+    const metadata = {
+      orderNumber: crypto.randomUUID(),
+      customerName: user?.fullName ?? "Unknown",
+      customerEmail: user?.emailAddresses[0]?.emailAddress ?? "Unknown",
+      clerkUserId: user?.id ?? "",
+      address: selectedAddress,
+    };
+
+    const res = await fetch("/api/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items: groupedItems, metadata }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Server Error");
+
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      throw new Error("No checkout URL returned");
     }
-  };
+  } catch (error) {
+    console.error("Checkout Error:", error);
+    alert("Ödeme başlatılamadı, lütfen tekrar deneyin.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleDeleteProduct = (id: string) => {
     deleteCartProduct(id);
