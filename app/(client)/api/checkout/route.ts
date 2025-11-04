@@ -1,14 +1,33 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createCheckoutSession } from "@/actions/createCheckoutSession";
+import { NextResponse } from "next/server";
+import Stripe from "stripe";
 
-export async function POST(req: NextRequest) {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+  apiVersion:"2025-08-27.basil"
+});
+
+export async function POST(req: Request) {
   try {
     const { items, metadata } = await req.json();
-    const url = await createCheckoutSession(items, metadata);
-    return NextResponse.json({ url });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    console.error("Checkout API Error:", error);
-    return NextResponse.json({ error: message }, { status: 500 });
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: items.map((item: any) => ({
+        price_data: {
+          currency: "usd",
+          product_data: { name: item.product.name },
+          unit_amount: item.product.price * 100, // cent
+        },
+        quantity: item.quantity,
+      })),
+      metadata,
+      mode: "payment",
+      success_url: "https://yourdomain.com/success",
+      cancel_url: "https://yourdomain.com/cancel",
+    });
+
+    return NextResponse.json({ url: session.url });
+  } catch (err: any) {
+    console.error("Stripe Checkout Error:", err);
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
