@@ -3,6 +3,7 @@ import LatestBlog from "@/components/LatestBlog";
 import HomeBanner from "@/components/new/HomeBanner";
 import ProductGrid from "@/components/ProductGrid";
 import ShopByBrands from "@/components/ShopByBrands";
+import Hero from "@/components/Hero";
 import { getCategories } from "@/sanity/queries";
 
 export default async function Home() {
@@ -10,7 +11,8 @@ export default async function Home() {
 
   return (
     <div>
-      <HomeBanner />
+      {/* <HomeBanner /> */}
+      <Hero/>
       <div className="py-10">
         <ProductGrid />
         <HomeCategories categories={categories} />

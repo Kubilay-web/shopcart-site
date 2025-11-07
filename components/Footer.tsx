@@ -86,7 +86,7 @@ const Footer = () => {
           <p>
             © {new Date().getFullYear()}{" "}
             <span className="text-darkColor font-black tracking-wider uppercase hover:text-shop_dark_green hoverEffect group font-sans">
-              Shpopcar
+              Betprin
               <span className="text-shop_dark_green group-hover:text-darkColor hoverEffect">
                 t
               </span>

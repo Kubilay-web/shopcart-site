@@ -14,7 +14,7 @@ const Logo = ({ className }: Props) => {
           className
         )}
       >
-        Shopcar
+        Betprin
         <span className="text-shop_light_green group-hover:text-shop_dark_green hoverEffect">
           t
         </span>

@@ -18,6 +18,9 @@ export const quickLinksData = [
   { title: "Contact us", href: "/contact" },
   { title: "Terms & Conditions", href: "/terms" },
   { title: "Privacy Policy", href: "/privacy" },
+  { title: "Impressum", href: "/impressum" },
+  { title: "Widerrufsbelehrung", href: "/cancellation-policy" },
+  { title: "Cookie Richtlinie", href: "/cookie-policy" },
   { title: "FAQs", href: "/faqs" },
   { title: "Help", href: "/help" },
 ];
