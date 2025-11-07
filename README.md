@@ -1,11 +1,11 @@
-# Shopcart Ecommerce Application
+# Betprint Ecommerce Application
 
 This is a Next.js-based ecommerce application template integrated with Sanity for content management, Clerk for authentication, Stripe for payments, and Sendbird for chat functionality.
 Follow the steps below to set up and customize the application.
 
 ## Getting started
 
-To set up the Shopcart Ecommerce Application, follow these steps carefully:
+To set up the Betprint Ecommerce Application, follow these steps carefully:
 
 ### 1. Install npm Dependencies
 
@@ -26,7 +26,7 @@ This will download all the necessary packages listed in package.json.
 Set up a Sanity project to manage your ecommerce content (e.g., products or blog posts):
 
 ```bash
-npm create sanity@latest -- --env=.env.local --create-project "Shopcart ecommerce" --dataset production
+npm create sanity@latest -- --env=.env.local --create-project "Betprint ecommerce" --dataset production
 ```
 
 If you don’t have a Sanity account, this command will guide you to create one.
@@ -35,7 +35,7 @@ After running this command, a .env.local file will be created (or updated) in yo
 NEXT_PUBLIC_SANITY_PROJECT_ID: A unique ID for your Sanity project, generated during this step.
 NEXT_PUBLIC_SANITY_DATASET: Set to production.
 
-- Note: You can verify your NEXT_PUBLIC_SANITY_PROJECT_ID later by logging into https://www.sanity.io/manage, selecting the "Shopcart ecommerce" project, and checking the project details.
+- Note: You can verify your NEXT_PUBLIC_SANITY_PROJECT_ID later by logging into https://www.sanity.io/manage, selecting the "Betprint ecommerce" project, and checking the project details.
 
 ## 3. Set Up Environment Variables
 
@@ -63,7 +63,7 @@ SENDBIRD_APP_ID=<your-sendbird-app-id>
 
 SANITY_API_TOKEN and SANITY_API_READ_TOKEN:
 Visit https://www.sanity.io/manage.
-Select your "Shopcart ecommerce" project.
+Select your "Betprint ecommerce" project.
 Go to the "API" section.
 Click "Add API token" and create tokens with the appropriate permissions (e.g., "Editor" for write, "Viewer" for read).
 Copy the tokens into .env.local.

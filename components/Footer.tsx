@@ -16,7 +16,7 @@ const Footer = () => {
           <div className="space-y-4">
             <Logo />
             <p className="text-gray-600 text-sm">
-              Discover curated furniture collections at Shopcart, blending style
+              Discover curated furniture collections at Betprint, blending style
               and comfort to elevate your living spaces.
             </p>
             <SocialMedia

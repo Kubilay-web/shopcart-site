@@ -35,27 +35,27 @@ export const categoriesData = [
 ];
 export const faqsData = [
   {
-    question: "What services does Shopcart offer?",
+    question: "What services does Betprint offer?",
     answer:
-      "Shopcart offers a wide range of technology solutions including custom software development, cloud services, and digital transformation consulting.",
+      "Betprint offers a wide range of technology solutions including custom software development, cloud services, and digital transformation consulting.",
   },
   {
-    question: "How can I get support for Shopcart products?",
+    question: "How can I get support for Betprint products?",
     answer:
-      "You can reach our support team through our contact page or by emailing support@Shopcart.com.",
+      "You can reach our support team through our contact page or by emailing support@Betprint.com.",
   },
   {
-    question: "Does Shopcart offer training for its products?",
+    question: "Does Betprint offer training for its products?",
     answer:
       "Yes, we offer comprehensive training programs for all our products and services. Please contact our sales team for more information.",
   },
   {
-    question: "What industries does Shopcart serve?",
+    question: "What industries does Betprint serve?",
     answer:
-      "Shopcart serves a wide range of industries including finance, healthcare, retail, and manufacturing.",
+      "Betprint serves a wide range of industries including finance, healthcare, retail, and manufacturing.",
   },
   {
-    question: "How does Shopcart ensure data security?",
+    question: "How does Betprint ensure data security?",
     answer:
       "We employ industry-standard security measures and comply with all relevant data protection regulations to ensure the security of our clients' data.",
   },

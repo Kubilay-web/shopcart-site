@@ -15,7 +15,7 @@ const Loading = () => {
         >
           <Loader2 className="animate-spin" />
           <span className="font-semibold tracking-wide">
-            Shopcart is loading...
+            Betprint is loading...
           </span>
         </motion.div>
       </div>

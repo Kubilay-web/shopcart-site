@@ -29,10 +29,10 @@ const opensans = localFont({
 
 export const metadata: Metadata = {
   title: {
-    template: "%s - Shopcart online store",
-    default: "Shopcart online store",
+    template: "%s - Betprint online store",
+    default: "Betprint online store",
   },
-  description: "Shopcart online store, Your one stop shop for all your needs",
+  description: "Betprint online store, Your one stop shop for all your needs",
 };
 
 const RootLayout = async ({ children }: { children: React.ReactNode }) => {
