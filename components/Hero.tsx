@@ -51,7 +51,7 @@ const Hero = () => {
           </p>
 
           <Button asChild>
-            <Link href="/collection" className="inline-flex items-center">
+            <Link href="/shop" className="inline-flex items-center">
               Jetzt einkaufen <ArrowRight className="ml-2 size-5" />
             </Link>
           </Button>
