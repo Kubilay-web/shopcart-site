@@ -12,7 +12,7 @@ const Hero = () => {
   return (
     <main className="w-full space-y-4 pb-5">
       {/* Hero Section */}
-      <div className="flex items-center bg-secondary h-[85vh] mx-6 rounded-lg overflow-hidden">
+      <div className="flex items-center bg-secondary h-full mx-6 rounded-lg overflow-hidden">
         {/* Left side */}
         <div className="space-y-7 p-6 pt-0 text-left md:w-1/2">
           <Link href="/" className="flex items-center gap-4">
@@ -58,7 +58,7 @@ const Hero = () => {
         </div>
 
         {/* Right side */}
-        <div className="relative hidden h-full w-1/2 md:block">
+        <div className="relative hidden h-[95vh] w-1/2 md:block">
           <Image
             src={banner}
             alt="Bet Print Shop banner"
