@@ -1,27 +1,20 @@
 import { NextResponse } from "next/server";
 
-// İzin verilen domain (prod için)
-const allowedOrigins = ["*"];
-
-const corsHeaders = (origin: string | null) => ({
-  "Access-Control-Allow-Origin": allowedOrigins.includes(origin ?? "") ? origin! : "",
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
-});
+};
 
-// Preflight OPTIONS isteği
-export async function OPTIONS(req: Request) {
-  const origin = req.headers.get("origin");
+// 🧠 Preflight (OPTIONS) isteğine cevap
+export async function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
-    headers: corsHeaders(origin),
+    headers: corsHeaders,
   });
 }
 
-// POST isteği
 export async function POST(req: Request) {
-  const origin = req.headers.get("origin");
-
   try {
     const { name, email, message } = await req.json();
 
@@ -51,15 +44,20 @@ export async function POST(req: Request) {
 
     const result = await sanityRes.json();
 
-    return NextResponse.json(
-      { success: true, result },
-      { headers: corsHeaders(origin) }
-    );
+    if (!sanityRes.ok) {
+      console.error("Sanity create error:", result);
+      return NextResponse.json(
+        { success: false, error: "Failed to send message" },
+        { status: 500, headers: corsHeaders }
+      );
+    }
+
+    return NextResponse.json({ success: true, result }, { headers: corsHeaders });
   } catch (error) {
-    console.error("Sanity API error:", error);
+    console.error("Newsletter error:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to send message" },
-      { status: 500, headers: corsHeaders(origin) }
+      { success: false, error: "Internal Server Error" },
+      { status: 500, headers: corsHeaders }
     );
   }
 }
