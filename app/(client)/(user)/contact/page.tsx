@@ -25,47 +25,33 @@ const ContactPage = () => {
     }));
   };
 
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = new FormData();
-    const currentDateTime = new Date().toLocaleString();
-    form.append("Name", formData.name);
-    form.append("Email", formData.email);
-    form.append("Message", formData.message);
-    form.append("DateTime", currentDateTime);
-    setLoading(true);
-    setSuccess(false);
+  e.preventDefault();
+  setLoading(true);
+  setSuccess(false);
 
-    try {
-      // Get your getform.io endpoint from the dashboard
-      // and replace the empty string with your endpoint
-      // --------------------- xxx ---------------------
-      // const response = await fetch('', {
-      //   method: "POST",
-      //   body: form,
-      // });
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/contact`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    });
 
-      // if (response?.ok) {
-      //   setFormData({
-      //     name: "",
-      //     email: "",
-      //     interest: "",
-      //     budget: "",
-      //     message: "",
-      //   });
-      // }
-      setFormData({
-        name: "",
-        email: "",
-        message: "",
-      });
-    } catch (error) {
-      console.log("Form submitting Error", error);
-    } finally {
-      setLoading(false);
+    if (response.ok) {
+      setFormData({ name: "", email: "", message: "" });
       setSuccess(true);
+    } else {
+      console.error("Form submission failed");
     }
-  };
+  } catch (error) {
+    console.error("Form submitting Error", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div>

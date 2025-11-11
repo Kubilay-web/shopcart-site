@@ -1,10 +1,61 @@
+"use client";
+
 import Link from "next/link";
 import Logo from "./new/Logo";
 import FooterTop from "./new/FooterTop";
 import SocialMedia from "./new/SocialMedia";
 import { categoriesData, quickLinksData } from "@/constants";
+import { useEffect, useState } from "react";
 
 const Footer = () => {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setSuccess(false);
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/newsletter`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        }
+      );
+
+      const data = await res.json();
+      if (data.success) {
+        setSuccess(true);
+        setEmail("");
+      } else {
+        setError(data.error || "Something went wrong");
+      }
+
+      // ✅ Her durumda input’u temizle
+      setEmail("");
+    } catch (err) {
+      setError("Server error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 🕐 Mesajları 2 saniye sonra temizle
+  useEffect(() => {
+    if (success || error) {
+      const timer = setTimeout(() => {
+        setSuccess(false);
+        setError(null);
+      }, 2000); // 2 saniye sonra kaybolacak
+      return () => clearTimeout(timer);
+    }
+  }, [success, error]);
   return (
     <footer className="bg-white border-t">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -64,20 +115,29 @@ const Footer = () => {
               Subscribe to our newsletter to receive updates and exclusive
               offers.
             </p>
-            <form className="space-y-3">
+            <form onSubmit={handleSubmit} className="space-y-3">
               <input
                 type="email"
                 placeholder="Enter your email"
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-gray-200"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-200"
               />
               <button
                 type="submit"
+                disabled={loading}
                 className="w-full bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
               >
-                Subscribe
+                {loading ? "Subscribing..." : "Subscribe"}
               </button>
             </form>
+            {success && (
+              <p className="text-green-600 text-sm mt-2">
+                Thanks for subscribing!
+              </p>
+            )}
+            {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
           </div>
         </div>
 
