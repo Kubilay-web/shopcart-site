@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
       payment_method_types: ["card"],
       line_items: items.map((item: any) => ({
         price_data: {
-          currency: "USD",
+          currency: "EUR",
           unit_amount: Math.round(item.product.price * 100),
           product_data: {
             name: item.product.name,

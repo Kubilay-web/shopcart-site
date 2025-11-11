@@ -58,7 +58,7 @@ export async function createCheckoutSession(
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/cart`,
       line_items: items.map((item) => ({
         price_data: {
-          currency: "USD",
+          currency: "EUR",
           unit_amount: Math.round(item.product.price! * 100), // Convert to cents
           product_data: {
             name: item.product.name || "Unnamed Product",
