@@ -1,5 +1,19 @@
 import { NextResponse } from "next/server";
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*", // ✅ sadece bu domain erişebilir
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+// 🧠 Preflight (OPTIONS) isteklerini yakala
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: corsHeaders,
+  });
+}
+
 export async function POST(req: Request) {
   try {
     const { email } = await req.json();
@@ -7,7 +21,7 @@ export async function POST(req: Request) {
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json(
         { success: false, error: "Invalid email address" },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -35,7 +49,7 @@ export async function POST(req: Request) {
     if (existing) {
       return NextResponse.json(
         { success: false, error: "This email is already subscribed." },
-        { status: 409 } // Conflict
+        { status: 409, headers: corsHeaders }
       );
     }
 
@@ -68,16 +82,16 @@ export async function POST(req: Request) {
       console.error("Sanity create error:", result);
       return NextResponse.json(
         { success: false, error: "Failed to save email" },
-        { status: 500 }
+        { status: 500, headers: corsHeaders }
       );
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true }, { headers: corsHeaders });
   } catch (error) {
     console.error("Newsletter error:", error);
     return NextResponse.json(
       { success: false, error: "Internal Server Error" },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }

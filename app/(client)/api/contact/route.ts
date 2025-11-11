@@ -1,6 +1,27 @@
 import { NextResponse } from "next/server";
 
+// İzin verilen domain (prod için)
+const allowedOrigins = ["*"];
+
+const corsHeaders = (origin: string | null) => ({
+  "Access-Control-Allow-Origin": allowedOrigins.includes(origin ?? "") ? origin! : "",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+});
+
+// Preflight OPTIONS isteği
+export async function OPTIONS(req: Request) {
+  const origin = req.headers.get("origin");
+  return new NextResponse(null, {
+    status: 204,
+    headers: corsHeaders(origin),
+  });
+}
+
+// POST isteği
 export async function POST(req: Request) {
+  const origin = req.headers.get("origin");
+
   try {
     const { name, email, message } = await req.json();
 
@@ -29,9 +50,16 @@ export async function POST(req: Request) {
     );
 
     const result = await sanityRes.json();
-    return NextResponse.json({ success: true, result });
+
+    return NextResponse.json(
+      { success: true, result },
+      { headers: corsHeaders(origin) }
+    );
   } catch (error) {
     console.error("Sanity API error:", error);
-    return NextResponse.json({ success: false, error: "Failed to send message" }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: "Failed to send message" },
+      { status: 500, headers: corsHeaders(origin) }
+    );
   }
 }
