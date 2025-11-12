@@ -10,7 +10,7 @@ const Logo = ({ className }: Props) => {
     <Link href={"/"}>
       <h2
         className={cn(
-          "text-2xl text-shop_dark_green font-black tracking-wider uppercase hover:text-shop_light_green hoverEffect group font-sans",
+          "text-4xl text-shop_dark_green font-black tracking-wider uppercase hover:text-shop_light_green hoverEffect group font-sans",
           className
         )}
       >
