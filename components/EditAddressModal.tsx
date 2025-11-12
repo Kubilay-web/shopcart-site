@@ -93,8 +93,9 @@ const EditAddressModal = ({
       if (!result.success) throw new Error(result.error || "Failed to update address");
 
       toast.success("✅ Address updated successfully!");
+      onAddressUpdated(); // ✅ Adresleri tekrar fetch et
       onOpenChange(false);
-      onAddressUpdated?.();
+  
     } catch (error: unknown) {
       console.error("❌ Update address error:", error);
       toast.error(error instanceof Error ? error.message : "Failed to update address");
@@ -114,7 +115,7 @@ const EditAddressModal = ({
   return (
     <Dialog open={open} onOpenChange={handleDialogChange}>
       <DialogTrigger asChild>
-        <Button variant="outline">Edit Address</Button>
+        <Button className="mt-5" variant="outline">Edit Address</Button>
       </DialogTrigger>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>

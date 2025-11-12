@@ -82,12 +82,11 @@ const Footer = () => {
             <ul className="space-y-3">
               {quickLinksData?.map((item) => (
                 <li key={item?.title}>
-                  <Link
-                    href={item?.href}
+                  <div
                     className="text-gray-600 hover:text-shop_dark_green text-sm font-medium hoverEffect"
                   >
                     {item?.title}
-                  </Link>
+                  </div>
                 </li>
               ))}
             </ul>
