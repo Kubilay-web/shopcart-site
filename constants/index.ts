@@ -23,15 +23,14 @@ export const quickLinksData = [
   { title: "FAQs", href: "/faqs" },
   { title: "Help", href: "/help" },
 ];
+
+
 export const categoriesData = [
-  { title: "Mobiles", href: "mobiles" },
-  { title: "Appliances", href: "appliances" },
-  { title: "Smartphones", href: "smartphones" },
-  { title: "Air Conditioners", href: "air-conditioners" },
-  { title: "Washing Machine", href: "washing-machine" },
-  { title: "Kitchen Appliances", href: "kitchen-appliances" },
-  { title: "gadget accessories", href: "gadget-accessories" },
+  { title: "Thermorollen", href: "thermorollen" },
+  { title: "Kundenkarte", href: "kundenkarte" }
 ];
+
+
 export const faqsData = [
   {
     question: "What services does Betprint offer?",
