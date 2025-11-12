@@ -9,14 +9,14 @@ interface ContactItemData {
 const data: ContactItemData[] = [
   {
     title: "Visit Us",
-    subtitle: "Frankfurt, Germany",
+    subtitle: "Wetzlar,Deutschland",
     icon: (
       <MapPin className="h-6 w-6 text-gray-600 group-hover:text-primary transition-colors" />
     ),
   },
   {
     title: "Call Us",
-    subtitle: "+12 958 648 597",
+    subtitle: "+49 (0) 6441- 5643606",
     icon: (
       <Phone className="h-6 w-6 text-gray-600 group-hover:text-primary transition-colors" />
     ),
@@ -30,7 +30,7 @@ const data: ContactItemData[] = [
   },
   {
     title: "Email Us",
-    subtitle: "Betprint@gmail.com",
+    subtitle: "info@betprint.de",
     icon: (
       <Mail className="h-6 w-6 text-gray-600 group-hover:text-primary transition-colors" />
     ),
