@@ -66,12 +66,8 @@ const Footer = () => {
         <div className="py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div className="space-y-4">
             <Logo />
-            <p className="text-gray-600 text-sm">
-              Discover curated furniture collections at Betprint, blending style
-              and comfort to elevate your living spaces.
-            </p>
             <SocialMedia
-              className="text-darkColor/60"
+              className="text-darkColor/60 mt-5"
               iconClassName="border-darkColor/60 hover:border-shop_dark_green hover:text-shop_dark_green"
               tooltipClassName="bg-darkColor text-white"
             />
