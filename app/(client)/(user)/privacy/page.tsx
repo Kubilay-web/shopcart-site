@@ -69,7 +69,7 @@ const PrivacyPage = () => {
               <br />
               Deutschland
               <br />
-              Tel.: +49 (0) 6441 – 5643606
+              Tel.: +49 6441 5643606
               <br />
               E-Mail: info@betprint.de
             </address>

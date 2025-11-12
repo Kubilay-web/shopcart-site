@@ -32,6 +32,9 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import ProductSideMenu from "@/components/ProductSideMenu";
 import AddAddressModal from "@/components/AddAdressModal";
+import EditAddressModal from "@/components/EditAddressModal";
+import { Menu } from "@headlessui/react";
+import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 
 const CartPage = () => {
   const {
@@ -50,8 +53,8 @@ const CartPage = () => {
   const [addresses, setAddresses] = useState<ADDRESS_QUERYResult | null>(null);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [isAddAddressModalOpen, setIsAddAddressModalOpen] = useState(false);
-
-
+  const [editAddress, setEditAddress] = useState<Address | null>(null);
+  const [isEditAddressModalOpen, setIsEditAddressModalOpen] = useState(false);
 
   // ✅ Client-side flag
   useEffect(() => {
@@ -149,9 +152,44 @@ const CartPage = () => {
     await fetchAddresses();
   };
 
+  const handleDeleteAddress = async (addressId: string) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this address?"
+    );
+    if (!confirmed) return;
 
+    try {
+      setLoading(true);
 
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/address/${addressId}`,
+        {
+          method: "DELETE",
+        }
+      );
 
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to delete address");
+      }
+
+      // UI’yi güncelle
+      setAddresses(
+        (prev) => prev?.filter((addr) => addr._id !== addressId) || []
+      );
+      if (selectedAddress?._id === addressId) {
+        setSelectedAddress(null);
+      }
+
+      toast.success("Address deleted successfully!");
+    } catch (error) {
+      console.error("❌ Delete address error:", error);
+      toast.error("Failed to delete address");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="bg-gray-50 pb-52 md:pb-10">
@@ -315,26 +353,77 @@ const CartPage = () => {
                             >
                               {addresses.map((address) => (
                                 <div
-                                  onClick={() => setSelectedAddress(address)}
                                   key={address._id}
-                                  className={`flex items-center space-x-2 mb-4 cursor-pointer ${selectedAddress?._id === address?._id && "text-shop_dark_green"}`}
+                                  className={`flex items-start justify-between mb-4 p-2 rounded cursor-pointer ${
+                                    selectedAddress?._id === address._id
+                                      ? "bg-green-50"
+                                      : "hover:bg-gray-50"
+                                  }`}
+                                  onClick={() => setSelectedAddress(address)}
                                 >
-                                  <RadioGroupItem
-                                    value={address._id.toString()}
-                                    id={`address-${address._id}`}
-                                  />
-                                  <Label
-                                    htmlFor={`address-${address._id}`}
-                                    className="grid gap-1.5 flex-1"
+                                  <div className="flex items-center space-x-2 flex-1">
+                                    <RadioGroupItem
+                                      value={address._id.toString()}
+                                      id={`address-${address._id}`}
+                                    />
+                                    <Label
+                                      htmlFor={`address-${address._id}`}
+                                      className="grid gap-1.5 flex-1"
+                                    >
+                                      <span className="font-semibold">
+                                        {address.name}
+                                      </span>
+                                      <span className="text-sm text-muted-foreground">
+                                        {address.address}, {address.city},{" "}
+                                        {address.state} {address.zip}
+                                      </span>
+                                    </Label>
+                                  </div>
+
+                                  {/* ⚙️ Dropdown */}
+                                  <Menu
+                                    as="div"
+                                    className="relative inline-block text-left"
                                   >
-                                    <span className="font-semibold">
-                                      {address.name}
-                                    </span>
-                                    <span className="text-sm text-muted-foreground">
-                                      {address.address}, {address.city},{" "}
-                                      {address.state} {address.zip}
-                                    </span>
-                                  </Label>
+                                    <Menu.Button
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="p-1 rounded hover:bg-gray-100"
+                                    >
+                                      <EllipsisVerticalIcon className="w-5 h-5 text-gray-600" />
+                                    </Menu.Button>
+
+                                    <Menu.Items className="absolute right-0 mt-2 w-28 origin-top-right bg-white border rounded shadow-lg focus:outline-none z-10">
+                                      <Menu.Item>
+                                        {({ active }) => (
+                                          <button
+                                            className={`${
+                                              active ? "bg-gray-100" : ""
+                                            } block w-full text-left px-4 py-2 text-sm text-gray-700`}
+                                            onClick={() => {
+                                              setEditAddress(address);
+                                              setIsEditAddressModalOpen(true);
+                                            }}
+                                          >
+                                            Edit
+                                          </button>
+                                        )}
+                                      </Menu.Item>
+                                      <Menu.Item>
+                                        {({ active }) => (
+                                          <button
+                                            className={`${
+                                              active ? "bg-gray-100" : ""
+                                            } block w-full text-left px-4 py-2 text-sm text-red-600`}
+                                            onClick={() =>
+                                              handleDeleteAddress(address._id)
+                                            }
+                                          >
+                                            Delete
+                                          </button>
+                                        )}
+                                      </Menu.Item>
+                                    </Menu.Items>
+                                  </Menu>
                                 </div>
                               ))}
                             </RadioGroup>
@@ -342,8 +431,17 @@ const CartPage = () => {
                             <AddAddressModal
                               open={isAddAddressModalOpen}
                               onOpenChange={setIsAddAddressModalOpen}
-                              onAddressAdded={handleAddressAdded}
+                              onAddressAdded={fetchAddresses}
                             />
+
+                            {editAddress && (
+                              <EditAddressModal
+                                open={isEditAddressModalOpen}
+                                onOpenChange={setIsEditAddressModalOpen}
+                                address={editAddress}
+                                onAddressUpdated={fetchAddresses}
+                              />
+                            )}
                           </CardContent>
                         </Card>
                       </div>
