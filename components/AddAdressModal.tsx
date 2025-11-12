@@ -58,18 +58,41 @@ const AddAddressModal = ({ open, onOpenChange, onAddressAdded }: AddAddressModal
     return !newErrors.state && !newErrors.zip;
   };
 
+
+
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      toast.error("Please fix the validation errors");
+  e.preventDefault();
+  
+  if (!validateForm()) {
+    toast.error("Please fix the validation errors");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const clerkUserId = user?.id; // 👈 Clerk kullanıcı ID'sini al
+
+    if (!clerkUserId) {
+      toast.error("User not found, please log in again");
       return;
     }
 
-    setLoading(true);
+    console.log('📤 Sending address data to API:', {
+      name: formData.name,
+      email: user?.emailAddresses[0]?.emailAddress || formData.email,
+      address: formData.address,
+      city: formData.city,
+      state: formData.state.toUpperCase(),
+      zip: formData.zip,
+      default: formData.default,
+      clerkUserId, // 👈 Burada API'ye gönderiyoruz
+    });
 
-    try {
-      console.log('Sending address data:', {
+    const response = await fetch('/api/address', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
         name: formData.name,
         email: user?.emailAddresses[0]?.emailAddress || formData.email,
         address: formData.address,
@@ -77,64 +100,44 @@ const AddAddressModal = ({ open, onOpenChange, onAddressAdded }: AddAddressModal
         state: formData.state.toUpperCase(),
         zip: formData.zip,
         default: formData.default,
-      });
+        clerkUserId, // 🔥 Ekledik!
+      }),
+    });
 
-      const response = await fetch('/api/address', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: user?.emailAddresses[0]?.emailAddress || formData.email,
-          address: formData.address,
-          city: formData.city,
-          state: formData.state.toUpperCase(),
-          zip: formData.zip,
-          default: formData.default,
-        }),
-      });
+    const result = await response.json();
 
-      const result = await response.json();
-
-      console.log('API response:', result);
-
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to create address');
-      }
-      
-      toast.success("✅ Address added successfully!");
-      
-      // Formu temizle
-      setFormData({
-        name: "",
-        email: "",
-        address: "",
-        city: "",
-        state: "",
-        zip: "",
-        default: false,
-      });
-      setErrors({ state: "", zip: "" });
-      
-      // Modal'ı kapat ve callback'i çağır
-      onOpenChange(false);
-      if (onAddressAdded) {
-        onAddressAdded();
-      }
-    } catch (error: unknown) { // ✅ any yerine unknown kullan
-      console.error("❌ Error adding address:", error);
-      let errorMessage = "Failed to add address";
-      
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-      
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to create address');
     }
-  };
+
+    toast.success("✅ Address added successfully!");
+
+    // Formu temizle
+    setFormData({
+      name: "",
+      email: "",
+      address: "",
+      city: "",
+      state: "",
+      zip: "",
+      default: false,
+    });
+    setErrors({ state: "", zip: "" });
+
+    // Modal'ı kapat ve parent callback'i çağır
+    onOpenChange(false);
+    onAddressAdded?.();
+
+  } catch (error: unknown) {
+    console.error("❌ Error adding address:", error);
+    let errorMessage = "Failed to add address";
+    if (error instanceof Error) errorMessage = error.message;
+    toast.error(errorMessage);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;

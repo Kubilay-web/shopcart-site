@@ -46,21 +46,35 @@ const CartPage = () => {
   const groupedItems = useCartStore((state) => state.getGroupedItems());
   const { isSignedIn } = useAuth();
   const { user } = useUser();
+
   const [addresses, setAddresses] = useState<ADDRESS_QUERYResult | null>(null);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [isAddAddressModalOpen, setIsAddAddressModalOpen] = useState(false);
 
 
 
+  // ✅ Client-side flag
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
-   const fetchAddresses = async () => {
+  // ✅ User yüklendiğinde veya modal kapandığında adresleri fetch et
+  const fetchAddresses = async () => {
+    if (!user?.id) {
+      console.warn("🚫 User not loaded yet, skipping fetchAddresses()");
+      return;
+    }
+
     setLoading(true);
     try {
-      const query = `*[_type=="address"] | order(publishedAt desc)`;
-      const data = await client.fetch(query);
-      console.log("📦 Fetched addresses:", data);
-      
+      const query = `*[_type == "address" && clerkUserId == $userId] | order(_createdAt desc)`;
+      const params = { userId: user.id };
+
+      const data: Address[] = await client.fetch(query, params);
+      console.log("📦 Fetched user-specific addresses:", data);
+
       setAddresses(data);
+
       const defaultAddress = data.find((addr) => addr.default);
       if (defaultAddress) {
         setSelectedAddress(defaultAddress);
@@ -68,35 +82,29 @@ const CartPage = () => {
         setSelectedAddress(data[0]);
       }
     } catch (error) {
-      console.log("Addresses fetching error:", error);
+      console.error("❌ Addresses fetching error:", error);
     } finally {
       setLoading(false);
     }
   };
 
+  // ✅ User yüklendiğinde fetch
+  useEffect(() => {
+    if (user?.id) {
+      console.log("✅ User loaded:", user.id);
+      fetchAddresses();
+    }
+  }, [user]);
 
-    useEffect(() => {
-    setIsClient(true);
-    fetchAddresses();
-  }, []);
-
-  // ✅ SADECE modal kapandığında ve fetchTrigger değiştiğinde çek
+  // ✅ Modal kapandığında tekrar fetch
   useEffect(() => {
     if (!isAddAddressModalOpen) {
       console.log("🔄 Modal closed, fetching addresses...");
       fetchAddresses();
     }
-  }, [isAddAddressModalOpen]); // ❌ addresses'i dependency'den ÇIKARIN
+  }, [isAddAddressModalOpen]);
 
-  // ✅ addresses değişince yapılacak diğer işlemler (isteğe bağlı)
-  useEffect(() => {
-    console.log("🔍 Addresses updated:");
-  }, [addresses]);
-
-  if (!isClient) {
-    return <Loading />;
-  }
-
+  if (!isClient) return <Loading />;
 
   const handleResetCart = () => {
     const confirmed = window.confirm("Are you sure to reset your Cart?");
@@ -107,21 +115,26 @@ const CartPage = () => {
   };
 
   const handleCheckout = async () => {
+    if (!user?.id) {
+      toast.error("You must be signed in to checkout!");
+      return;
+    }
+
     setLoading(true);
     try {
-      const metadata: Metadata = {
+      const metadata = {
         orderNumber: crypto.randomUUID(),
-        customerName: user?.fullName ?? "Unknown",
-        customerEmail: user?.emailAddresses[0]?.emailAddress ?? "Unknown",
-        clerkUserId: user!.id,
+        customerName: user.fullName ?? "Unknown",
+        customerEmail: user.emailAddresses[0]?.emailAddress ?? "Unknown",
+        clerkUserId: user.id,
         address: selectedAddress,
       };
+
       const checkoutUrl = await createCheckoutSession(groupedItems, metadata);
-      if (checkoutUrl) {
-        window.location.href = checkoutUrl;
-      }
+      if (checkoutUrl) window.location.href = checkoutUrl;
     } catch (error) {
-      console.error("Error creating checkout session:", error);
+      console.error("❌ Error creating checkout session:", error);
+      toast.error("Checkout failed. Try again.");
     } finally {
       setLoading(false);
     }
@@ -133,8 +146,10 @@ const CartPage = () => {
   };
 
   const handleAddressAdded = async () => {
-    await fetchAddresses(); // Adresleri yeniden fetch et
+    await fetchAddresses();
   };
+
+
 
 
 

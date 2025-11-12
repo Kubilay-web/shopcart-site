@@ -1,6 +1,4 @@
 import { NextResponse } from 'next/server'
-
-// Sanity client'ı burada oluştur
 import { createClient } from '@sanity/client'
 
 const sanityClient = createClient({
@@ -8,51 +6,62 @@ const sanityClient = createClient({
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET,
   apiVersion: process.env.NEXT_PUBLIC_SANITY_API_VERSION,
   useCdn: false,
-  token: process.env.SANITY_API_WRITE_TOKEN,
+  token: process.env.SANITY_API_WRITE_TOKEN, // Write token (server-side)
 })
 
-export async function POST(request) {
+export async function POST(request: Request) {
   try {
     const body = await request.json()
-    
-    console.log('Received address data:', body)
+    const {
+      name,
+      email,
+      address,
+      city,
+      state,
+      zip,
+      default: isDefault,
+      clerkUserId, // 👈 FRONTEND’den gelen kullanıcı ID
+    } = body
 
-    // Sanity'ye adresi kaydet
+    console.log('📦 Received address data:', body)
+
+
+    // 🔥 Sanity’ye kullanıcıya bağlı adresi kaydet
     const result = await sanityClient.create({
       _type: 'address',
-      name: body.name,
-      email: body.email,
-      address: body.address,
-      city: body.city,
-      state: body.state,
-      zip: body.zip,
-      default: body.default || false,
+      name,
+      email,
+      address,
+      city,
+      state,
+      zip,
+      default: isDefault || false,
+      clerkUserId, // 👈 burada Sanity’ye kaydediyoruz
       createdAt: new Date().toISOString(),
     })
 
-    console.log('Sanity create success:', result)
+    console.log('✅ Sanity create success:', result)
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       data: result,
-      message: 'Address created successfully' 
+      message: 'Address created successfully',
     })
-
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Sanity create error:', error)
-    
+
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error.message,
-        details: 'Check Sanity token permissions and CORS settings'
+      {
+        success: false,
+        error: error.message || 'Unknown error',
+        details: 'Check Sanity token permissions and CORS settings',
       },
       { status: 500 }
     )
   }
 }
 
-// OPTIONS method for CORS
+// ✅ CORS OPTIONS handler
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 200,
