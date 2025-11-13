@@ -62,11 +62,9 @@ const CartPage = () => {
   }, []);
 
 
-
-
   const fetchAddresses = async (userId: string) => {
   try {
-    const res = await fetch(`/api/address?clerkUserId=${userId}`)
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/address?clerkUserId=${userId}`)
     const json = await res.json()
     if (json.success) return json.data
     return []
@@ -82,9 +80,6 @@ useEffect(() => {
     fetchAddresses(user.id).then(setAddresses)
   }
 }, [user?.id, isAddAddressModalOpen, isEditAddressModalOpen])
-
- 
-
 
   if (!isClient) return <Loading />;
 
