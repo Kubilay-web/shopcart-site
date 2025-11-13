@@ -58,6 +58,9 @@ const CartPage = () => {
   const [deleteAddressId, setDeleteAddressId] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
+
+  console.log("selected--->",selectedAddress)
+
   // Client-side flag
   useEffect(() => {
     setIsClient(true);
