@@ -56,6 +56,9 @@ const CartPage = () => {
   const [editAddress, setEditAddress] = useState<Address | null>(null);
   const [isEditAddressModalOpen, setIsEditAddressModalOpen] = useState(false);
 
+
+  console.log("Selected Addresses------__->",selectedAddress)
+
   // ✅ Client-side flag
   useEffect(() => {
     setIsClient(true);
@@ -75,11 +78,23 @@ const CartPage = () => {
 }
 
 // Modal kapandıktan sonra veya component mount’ta
+
+
+// Modal kapandıktan sonra veya component mount’ta
 useEffect(() => {
   if (user?.id) {
-    fetchAddresses(user.id).then(setAddresses)
+    fetchAddresses(user.id).then((addresses) => {
+      setAddresses(addresses);
+      // default adres varsa onu seç
+      const defaultAddress = addresses?.find((addr) => addr.default);
+      if (defaultAddress) setSelectedAddress(defaultAddress);
+      else if (addresses?.length) setSelectedAddress(addresses[0]); // default yoksa ilk adresi seç
+    });
   }
-}, [user?.id, isAddAddressModalOpen, isEditAddressModalOpen])
+}, [user?.id, isAddAddressModalOpen, isEditAddressModalOpen]);
+
+
+
 
   if (!isClient) return <Loading />;
 
