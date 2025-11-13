@@ -16,7 +16,6 @@ import EmptyCart from "@/components/EmptyCart";
 import NoAccessToCart from "@/components/NoAccessToCart";
 import {
   createCheckoutSession,
-  Metadata,
 } from "@/actions/createCheckoutSession";
 import {
   Tooltip,
@@ -25,7 +24,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import Loading from "@/components/Loading";
-import { client } from "@/sanity/lib/client";
 import { Address, ADDRESS_QUERYResult } from "@/sanity.types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -56,51 +54,46 @@ const CartPage = () => {
   const [editAddress, setEditAddress] = useState<Address | null>(null);
   const [isEditAddressModalOpen, setIsEditAddressModalOpen] = useState(false);
 
+  // Delete modal state
+  const [deleteAddressId, setDeleteAddressId] = useState<string | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  console.log("Selected Addresses------__->",selectedAddress)
-
-  // ✅ Client-side flag
+  // Client-side flag
   useEffect(() => {
     setIsClient(true);
   }, []);
 
+  const fetchAddresses = async (userId?: string) => {
+    if (!userId) return [];
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/address?clerkUserId=${userId}`
+      );
+      const json = await res.json();
+      if (json.success) return json.data;
+      return [];
+    } catch (error) {
+      console.error(error);
+      return [];
+    }
+  };
 
-  const fetchAddresses = async (userId: string) => {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/address?clerkUserId=${userId}`)
-    const json = await res.json()
-    if (json.success) return json.data
-    return []
-  } catch (error) {
-    console.error(error)
-    return []
-  }
-}
-
-// Modal kapandıktan sonra veya component mount’ta
-
-
-// Modal kapandıktan sonra veya component mount’ta
-useEffect(() => {
-  if (user?.id) {
-    fetchAddresses(user.id).then((addresses) => {
-      setAddresses(addresses);
-      // default adres varsa onu seç
-      const defaultAddress = addresses?.find((addr) => addr.default);
-      if (defaultAddress) setSelectedAddress(defaultAddress);
-      else if (addresses?.length) setSelectedAddress(addresses[0]); // default yoksa ilk adresi seç
-    });
-  }
-}, [user?.id, isAddAddressModalOpen, isEditAddressModalOpen]);
-
-
-
+  useEffect(() => {
+    if (user?.id) {
+      fetchAddresses(user.id).then((addresses) => {
+        setAddresses(addresses);
+        // default adres varsa onu seç
+        const defaultAddress = addresses?.find((addr) => addr.default);
+        if (defaultAddress) setSelectedAddress(defaultAddress);
+        else if (addresses?.length) setSelectedAddress(addresses[0]);
+      });
+    }
+  }, [user?.id, isAddAddressModalOpen, isEditAddressModalOpen]);
 
   if (!isClient) return <Loading />;
 
   const handleResetCart = () => {
-    const confirmed = window.confirm("Are you sure to reset your Cart?");
-    if (confirmed) {
+    if (window.confirm("Are you sure to reset your Cart?")) {
       resetCart();
       toast.success("Your cart reset successfully!");
     }
@@ -111,7 +104,6 @@ useEffect(() => {
       toast.error("You must be signed in to checkout!");
       return;
     }
-
     setLoading(true);
     try {
       const metadata = {
@@ -137,49 +129,6 @@ useEffect(() => {
     toast.success("Product deleted successfully!");
   };
 
-  const handleAddressAdded = async () => {
-    await fetchAddresses();
-  };
-
-  const handleDeleteAddress = async (addressId: string) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this address?"
-    );
-    if (!confirmed) return;
-
-    try {
-      setLoading(true);
-
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/address/${addressId}`,
-        {
-          method: "DELETE",
-        }
-      );
-
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || "Failed to delete address");
-      }
-
-      // UI’yi güncelle
-      setAddresses(
-        (prev) => prev?.filter((addr) => addr._id !== addressId) || []
-      );
-      if (selectedAddress?._id === addressId) {
-        setSelectedAddress(null);
-      }
-
-      toast.success("Address deleted successfully!");
-    } catch (error) {
-      console.error("❌ Delete address error:", error);
-      toast.error("Failed to delete address");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="bg-gray-50 pb-52 md:pb-10">
       {isSignedIn ? (
@@ -191,7 +140,7 @@ useEffect(() => {
                 <h1 className="text-2xl font-semibold">Shopping Cart</h1>
               </div>
               <div className="grid lg:grid-cols-3 md:gap-8">
-                {/* Product View start */}
+                {/* Product View */}
                 <div className="lg:col-span-2 rounded-lg">
                   <div className="border bg-white rounded-md">
                     {groupedItems?.map(({ product }) => {
@@ -213,7 +162,7 @@ useEffect(() => {
                                   width={500}
                                   height={500}
                                   loading="lazy"
-                                  className="w-32 md:w-40 h-32 md:h-40 object-cover group-hover:scale-105 overflow-hidden transition-transform duration-500"
+                                  className="w-32 md:w-40 h-32 md:h-40 object-cover group-hover:scale-105 transition-transform duration-500"
                                 />
                               </Link>
                             )}
@@ -224,15 +173,11 @@ useEffect(() => {
                                 </h2>
                                 <p className="text-sm capitalize">
                                   Variant:{" "}
-                                  <span className="font-semibold">
-                                    {product?.variant}
-                                  </span>
+                                  <span className="font-semibold">{product?.variant}</span>
                                 </p>
                                 <p className="text-sm capitalize">
                                   Status:{" "}
-                                  <span className="font-semibold">
-                                    {product?.status}
-                                  </span>
+                                  <span className="font-semibold">{product?.status}</span>
                                 </p>
                               </div>
                               <div className="flex items-center gap-2">
@@ -243,7 +188,6 @@ useEffect(() => {
                                         product={product}
                                         className="relative top-0 right-0"
                                       />
-                                      {/* <Heart className="w-4 h-4 md:w-5 md:h-5 mr-1 text-gray-500 hover:text-red-600 hoverEffect" /> */}
                                     </TooltipTrigger>
                                     <TooltipContent className="font-bold">
                                       Add to Favorite
@@ -252,9 +196,7 @@ useEffect(() => {
                                   <Tooltip>
                                     <TooltipTrigger>
                                       <Trash
-                                        onClick={() =>
-                                          handleDeleteProduct(product?._id)
-                                        }
+                                        onClick={() => handleDeleteProduct(product?._id)}
                                         className="w-4 h-4 md:w-5 md:h-5 mr-1 text-gray-500 hover:text-red-600 hoverEffect"
                                       />
                                     </TooltipTrigger>
@@ -286,14 +228,11 @@ useEffect(() => {
                   </div>
                 </div>
 
-                {/* Product View end */}
-
+                {/* Order Summary & Addresses */}
                 <div>
                   <div className="lg:col-span-1">
                     <div className="hidden md:inline-block w-full bg-white p-6 rounded-lg border">
-                      <h2 className="text-xl font-semibold mb-4">
-                        Order Summary
-                      </h2>
+                      <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
                       <div className="space-y-4">
                         <div className="flex justify-between">
                           <span>SubTotal</span>
@@ -305,11 +244,9 @@ useEffect(() => {
                             amount={getSubTotalPrice() - getTotalPrice()}
                           />
                         </div>
-
                         <Separator />
                         <div className="flex justify-between font-semibold text-lg">
                           <span>Total</span>
-
                           <PriceFormatter
                             amount={useCartStore?.getState().getTotalPrice()}
                             className="text-lg font-bold text-black"
@@ -325,9 +262,8 @@ useEffect(() => {
                         </Button>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="">
+                    {/* Address selection */}
                     {addresses && (
                       <div className="bg-white rounded-md mt-5">
                         <Card>
@@ -359,21 +295,16 @@ useEffect(() => {
                                       htmlFor={`address-${address._id}`}
                                       className="grid gap-1.5 flex-1"
                                     >
-                                      <span className="font-semibold">
-                                        {address.name}
-                                      </span>
+                                      <span className="font-semibold">{address.name}</span>
                                       <span className="text-sm text-muted-foreground">
-                                        {address.address}, {address.city},{" "}
-                                        {address.state} {address.zip}
+                                        {address.address}, {address.city}, {address.state}{" "}
+                                        {address.zip}
                                       </span>
                                     </Label>
                                   </div>
 
-                                  {/* ⚙️ Dropdown */}
-                                  <Menu
-                                    as="div"
-                                    className="relative inline-block text-left"
-                                  >
+                                  {/* Dropdown */}
+                                  <Menu as="div" className="relative inline-block text-left">
                                     <Menu.Button
                                       onClick={(e) => e.stopPropagation()}
                                       className="p-1 rounded hover:bg-gray-100"
@@ -385,9 +316,7 @@ useEffect(() => {
                                       <Menu.Item>
                                         {({ active }) => (
                                           <button
-                                            className={`${
-                                              active ? "bg-gray-100" : ""
-                                            } block w-full text-left px-4 py-2 text-sm text-gray-700`}
+                                            className={`${active ? "bg-gray-100" : ""} block w-full text-left px-4 py-2 text-sm text-gray-700`}
                                             onClick={() => {
                                               setEditAddress(address);
                                               setIsEditAddressModalOpen(true);
@@ -400,12 +329,11 @@ useEffect(() => {
                                       <Menu.Item>
                                         {({ active }) => (
                                           <button
-                                            className={`${
-                                              active ? "bg-gray-100" : ""
-                                            } block w-full text-left px-4 py-2 text-sm text-red-600`}
-                                            onClick={() =>
-                                              handleDeleteAddress(address._id)
-                                            }
+                                            className={`${active ? "bg-gray-100" : ""} block w-full text-left px-4 py-2 text-sm text-red-600`}
+                                            onClick={() => {
+                                              setDeleteAddressId(address._id);
+                                              setIsDeleteModalOpen(true);
+                                            }}
                                           >
                                             Delete
                                           </button>
@@ -417,6 +345,7 @@ useEffect(() => {
                               ))}
                             </RadioGroup>
 
+                            {/* Add/Edit Address Modals */}
                             <AddAddressModal
                               open={isAddAddressModalOpen}
                               onOpenChange={setIsAddAddressModalOpen}
@@ -429,7 +358,10 @@ useEffect(() => {
                                 onOpenChange={setIsEditAddressModalOpen}
                                 address={editAddress}
                                 onAddressUpdated={async () => {
-                                  await fetchAddresses(); // direkt güncel veriyi çek
+                                  if (user?.id) {
+                                    const newAddresses = await fetchAddresses(user.id);
+                                    setAddresses(newAddresses);
+                                  }
                                 }}
                               />
                             )}
@@ -439,49 +371,62 @@ useEffect(() => {
                     )}
                   </div>
                 </div>
-                {/* Order summary mobile view */}
-                <div className="md:hidden fixed bottom-0 left-0 w-full bg-white pt-2">
-                  <div className="bg-white p-4 rounded-lg border mx-4">
-                    <h2 className="text-lg font-semibold mb-2">
-                      Order Summary
-                    </h2>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span>SubTotal</span>
-                        <PriceFormatter amount={getSubTotalPrice()} />
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Discount</span>
-                        <PriceFormatter
-                          amount={getSubTotalPrice() - getTotalPrice()}
-                        />
-                      </div>
+              </div>
 
-                      <Separator />
-                      <div className="flex justify-between font-semibold text-lg">
-                        <span>Total</span>
-
-                        <PriceFormatter
-                          amount={useCartStore?.getState().getTotalPrice()}
-                          className="text-lg font-bold text-black"
-                        />
-                      </div>
+              {/* Delete Address Modal */}
+              {isDeleteModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                  <div className="bg-white rounded-lg p-6 w-80 md:w-96 shadow-lg">
+                    <h3 className="text-lg font-semibold mb-4">
+                      Are you sure you want to delete this address?
+                    </h3>
+                    <div className="flex justify-end gap-2">
                       <Button
-                        onClick={handleCheckout}
-                        disabled={loading}
-                        className="w-full rounded-full font-semibold tracking-wide"
-                        size="lg"
+                        variant="outline"
+                        onClick={() => {
+                          setIsDeleteModalOpen(false);
+                          setDeleteAddressId(null);
+                        }}
                       >
-                        {loading ? "Processing" : "Proceed to Checkout"}
+                        Cancel
                       </Button>
-                      <Link
-                        href="/"
-                        className="text-center text-sm text-primary hover:underline border border-darkColor/50 rounded-full flex items-center justify-center py-2 hover:bg-darkColor/5 hover:border-darkColor hoverEffect"
-                      ></Link>
+                      <Button
+                        variant="destructive"
+                        onClick={async () => {
+                          if (!deleteAddressId) return;
+                          setLoading(true);
+                          try {
+                            const res = await fetch(
+                              `${process.env.NEXT_PUBLIC_BASE_URL}/api/address/${deleteAddressId}`,
+                              { method: "DELETE" }
+                            );
+                            const data = await res.json();
+                            if (!res.ok || !data.success)
+                              throw new Error(data.error || "Failed to delete address");
+
+                            setAddresses((prev) =>
+                              prev?.filter((addr) => addr._id !== deleteAddressId) || []
+                            );
+                            if (selectedAddress?._id === deleteAddressId) {
+                              setSelectedAddress(null);
+                            }
+                            toast.success("Address deleted successfully!");
+                          } catch (error) {
+                            console.error("❌ Delete address error:", error);
+                            toast.error("Failed to delete address");
+                          } finally {
+                            setLoading(false);
+                            setIsDeleteModalOpen(false);
+                            setDeleteAddressId(null);
+                          }
+                        }}
+                      >
+                        Delete
+                      </Button>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
             </>
           ) : (
             <EmptyCart />
