@@ -61,51 +61,30 @@ const CartPage = () => {
     setIsClient(true);
   }, []);
 
-  // ✅ User yüklendiğinde veya modal kapandığında adresleri fetch et
-  const fetchAddresses = async () => {
-    if (!user?.id) {
-      console.warn("🚫 User not loaded yet, skipping fetchAddresses()");
-      return;
-    }
 
-    setLoading(true);
-    try {
-      const query = `*[_type == "address" && clerkUserId == $userId] | order(_createdAt desc)`;
-      const params = { userId: user.id };
 
-      const data: Address[] = await client.fetch(query, params);
-      console.log("📦 Fetched user-specific addresses:", data);
 
-      setAddresses(data);
+  const fetchAddresses = async (userId: string) => {
+  try {
+    const res = await fetch(`/api/address?clerkUserId=${userId}`)
+    const json = await res.json()
+    if (json.success) return json.data
+    return []
+  } catch (error) {
+    console.error(error)
+    return []
+  }
+}
 
-      const defaultAddress = data.find((addr) => addr.default);
-      if (defaultAddress) {
-        setSelectedAddress(defaultAddress);
-      } else if (data.length > 0) {
-        setSelectedAddress(data[0]);
-      }
-    } catch (error) {
-      console.error("❌ Addresses fetching error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+// Modal kapandıktan sonra veya component mount’ta
+useEffect(() => {
+  if (user?.id) {
+    fetchAddresses(user.id).then(setAddresses)
+  }
+}, [user?.id, isAddAddressModalOpen, isEditAddressModalOpen])
 
-  // ✅ User yüklendiğinde fetch
-  useEffect(() => {
-    if (user?.id) {
-      console.log("✅ User loaded:", user.id);
-      fetchAddresses();
-    }
-  }, [user]);
+ 
 
-  // ✅ Modal kapandığında tekrar fetch
-  useEffect(() => {
-    if (!isAddAddressModalOpen) {
-      console.log("🔄 Modal closed, fetching addresses...");
-      fetchAddresses();
-    }
-  }, [isAddAddressModalOpen]);
 
   if (!isClient) return <Loading />;
 
@@ -439,7 +418,9 @@ const CartPage = () => {
                                 open={isEditAddressModalOpen}
                                 onOpenChange={setIsEditAddressModalOpen}
                                 address={editAddress}
-                                onAddressUpdated={fetchAddresses}
+                                onAddressUpdated={async () => {
+                                  await fetchAddresses(); // direkt güncel veriyi çek
+                                }}
                               />
                             )}
                           </CardContent>

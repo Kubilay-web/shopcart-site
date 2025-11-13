@@ -36,9 +36,12 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
 
 
 
-
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   const { id } = params;
+
   try {
     const body = await request.json();
     const {
@@ -51,6 +54,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       default: isDefault,
     } = body;
 
+    // 🔥 commit visibility: "sync" ekledik, böylece index güncellenmeden yanıt dönmez
     const updated = await sanityClient
       .patch(id)
       .set({
@@ -62,7 +66,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         zip,
         default: isDefault || false,
       })
-      .commit();
+      .commit({ visibility: "sync" });
 
     console.log("✅ Address updated:", updated);
 

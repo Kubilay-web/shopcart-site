@@ -61,6 +61,39 @@ export async function POST(request: Request) {
   }
 }
 
+
+
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const clerkUserId = searchParams.get('clerkUserId')
+
+    if (!clerkUserId) {
+      return NextResponse.json(
+        { success: false, error: 'Missing clerkUserId' },
+        { status: 400 }
+      )
+    }
+
+    // 🔥 Sanity’den kullanıcıya ait adresleri çek
+    const query = `*[_type == "address" && clerkUserId == $clerkUserId] | order(_createdAt desc)`
+    const addresses = await sanityClient.fetch(query, { clerkUserId })
+
+    return NextResponse.json({
+      success: true,
+      data: addresses,
+    })
+  } catch (error: any) {
+    console.error('❌ Sanity fetch error:', error)
+    return NextResponse.json(
+      { success: false, error: error.message || 'Unknown error' },
+      { status: 500 }
+    )
+  }
+}
+
+
+
 // ✅ CORS OPTIONS handler
 export async function OPTIONS() {
   return new NextResponse(null, {
