@@ -59,7 +59,6 @@ const CartPage = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
 
-  console.log("selected--->",selectedAddress)
 
   // Client-side flag
   useEffect(() => {
